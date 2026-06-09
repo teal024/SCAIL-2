@@ -79,8 +79,9 @@
 
     /* ── Hero / Title ── */
     .publication-maintitle {
+      font-family: 'Avenir Next', 'Avenir', 'Montserrat', sans-serif;
       font-size: 2.8rem;
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: -0.02em;
       color: #ffffff !important;
       line-height: 1.2;
@@ -119,6 +120,8 @@
       border-radius: 12px;
       overflow: hidden;
       transition: border-color 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
     }
     .video-card:hover { border-color: #333; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
     .video-card video { display: block; width: 100%; }
@@ -128,6 +131,7 @@
       color: #888 !important;
       text-align: center;
       letter-spacing: 0.03em;
+      margin-top: auto;
     }
 
     /* ── Grid layouts ── */
@@ -183,6 +187,67 @@
     }
     .compare-label strong { color: #fff !important; }
 
+    /* ── Stripe sections (alternate bg) ── */
+    .stripe-section { background-color: #0a0a0a; }
+
+    /* ── Light mode ── */
+    body.light, html:has(body.light) { background-color: #f5f5f5 !important; color: #1a1a1a; }
+
+    /* Navbar */
+    body.light .navbar, body.light .navbar-menu,
+    body.light .navbar-start, body.light .navbar-end {
+      background-color: #ffffff !important; border-bottom: 1px solid #e0e0e0;
+    }
+    body.light .navbar-item, body.light .navbar-link { color: #1a1a1a !important; }
+    body.light .navbar-item:hover { background-color: #f0f0f0 !important; color: #000 !important; }
+
+    /* Sections */
+    body.light .hero, body.light .section, body.light .footer { background-color: #f5f5f5 !important; }
+    body.light .stripe-section { background-color: #ebebeb !important; }
+
+    /* Typography — override every gray shade used in dark mode */
+    body.light .title, body.light .subtitle,
+    body.light h1, body.light h2, body.light h3, body.light h4, body.light h5 { color: #111 !important; }
+    body.light .publication-maintitle { color: #000 !important; }
+    body.light .publication-subtitle { color: #444 !important; }
+    body.light .content, body.light .content p, body.light .content li,
+    body.light p, body.light .publication-authors, body.light .author-block { color: #222 !important; }
+    body.light .content strong { color: #000 !important; }
+    body.light .affil-block { color: #555 !important; }
+    body.light .section-tag { border-color: #bbb; color: #555 !important; }
+    body.light .method-caption { color: #555 !important; }
+    body.light .footer .content, body.light .footer p { color: #666 !important; }
+
+    /* Links */
+    body.light a { color: #1a6bbf; }
+    body.light a:hover { color: #0f4d8f; }
+
+    /* Buttons */
+    body.light .button.is-dark { background-color: #e0e0e0 !important; color: #111 !important; border-color: #bbb !important; }
+    body.light .button.is-dark:hover { background-color: #d0d0d0 !important; }
+
+    /* Video cards */
+    body.light .video-card { background: #ffffff; border-color: #ddd; }
+    body.light .video-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-color: #bbb; }
+    body.light .video-caption { color: #555 !important; }
+
+    /* Comparison label */
+    body.light .compare-label { background: #ffffff; border-color: #ddd; color: #444 !important; }
+    body.light .compare-label strong { color: #111 !important; }
+
+    /* Method key-contribution cards (inline background:#0d0d0d) */
+    body.light div[style*="background:#0d0d0d"] { background: #ffffff !important; border-color: #ddd !important; }
+    body.light div[style*="background:#0d0d0d"] h4 { color: #111 !important; }
+    body.light div[style*="background:#0d0d0d"] p { color: #444 !important; }
+    /* dark mode: restore h4 color (was removed from inline) */
+    div[style*="background:#0d0d0d"] h4 { color: #fff; }
+
+    /* Images, dividers, code */
+    body.light .method-img { border-color: #ddd; }
+    body.light .section-divider { border-color: #ddd; }
+    body.light pre { background-color: #ebebeb !important; color: #111 !important; border-color: #ddd; }
+    body.light pre code { color: #111 !important; }
+
     /* Teaser highlight strip */
     .teaser-strip {
       display: flex;
@@ -197,7 +262,7 @@
 
   </style>
 </head>
-<body>
+<body class="light">
 
 <!-- ───────────────────── NAVBAR ───────────────────── -->
 <nav class="navbar" role="navigation" aria-label="main navigation">
@@ -208,10 +273,32 @@
   </div>
   <div class="navbar-menu">
     <div class="navbar-start" style="flex-grow:1;justify-content:center;">
-      <a class="navbar-item" href="../v1/index.html">← SCAIL-1</a>
+      <a class="navbar-item" href="https://teal024.github.io/SCAIL">← SCAIL-1</a>
     </div>
   </div>
 </nav>
+
+<!-- Fixed theme slide toggle -->
+<div id="theme-switch-wrap" onclick="toggleTheme()" style="
+  position:fixed; top:14px; right:18px; z-index:9999;
+  display:flex; align-items:center; gap:7px; cursor:pointer;
+  backdrop-filter:blur(8px);">
+  <span id="theme-icon" style="font-size:1.1rem;">☀️</span>
+  <div id="theme-track" style="
+    width:40px; height:22px; border-radius:999px;
+    background:#555; position:relative;
+    transition:background 0.25s; border:1px solid rgba(255,255,255,0.15);">
+    <div id="theme-thumb" style="
+      position:absolute; top:3px; left:3px;
+      width:14px; height:14px; border-radius:50%;
+      background:#fff; transition:transform 0.25s;"></div>
+  </div>
+</div>
+
+<style>
+  body.light #theme-track { background: #4a90e2; border-color: rgba(0,0,0,0.1); }
+  body.light #theme-thumb { transform: translateX(18px); }
+</style>
 
 <!-- ───────────────────── HERO ───────────────────── -->
 <section class="hero" style="padding-top: 3rem; padding-bottom: 1rem;">
@@ -241,8 +328,8 @@
       <!-- Links -->
       <div class="publication-links scroll-animate" style="margin-top: 1.5rem;">
         <span class="link-block">
-          <a href="https://arxiv.org/abs/2512.05905" target="_blank" class="external-link button is-normal is-rounded is-dark">
-            <span class="icon"><i class="ai ai-arxiv"></i></span><span>arXiv</span>
+          <a class="external-link button is-normal is-rounded is-dark" style="pointer-events:none; opacity:0.7;">
+            <span class="icon"><i class="ai ai-arxiv"></i></span><span>Coming Soon</span>
           </a>
         </span>
         <span class="link-block">
@@ -323,7 +410,7 @@
 <hr class="section-divider">
 
 <!-- ───────────────────── ABSTRACT ───────────────────── -->
-<section class="section alt-bg" style="padding-top:3rem; padding-bottom:3rem; background-color:#0a0a0a !important;">
+<section class="section stripe-section" style="padding-top:3rem; padding-bottom:3rem;">
   <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
@@ -370,37 +457,37 @@
     <div class="scroll-animate" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
 
       <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:1.2rem 1.5rem;">
-        <h4 style="color:#fff !important; font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
+        <h4 style="font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
           📦 MotionPair-60K Dataset
         </h4>
-        <p style="font-size:0.9rem; color:#999 !important; margin:0; line-height:1.6;">
+        <p style="font-size:0.9rem; color:#999; margin:0; line-height:1.6;">
           We use SCAIL-Preview, Wan-Animate, and MoCha as generators in the generation pipeline to synthesize 60K heterogeneous motion pairs spanning animation, replacement, and multi-character tasks.
         </p>
       </div>
 
       <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:1.2rem 1.5rem;">
-        <h4 style="color:#fff !important; font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
+        <h4 style="font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
           🎭 In-Context Mask Conditioning
         </h4>
-        <p style="font-size:0.9rem; color:#999 !important; margin:0; line-height:1.6;">
+        <p style="font-size:0.9rem; color:#999; margin:0; line-height:1.6;">
           Two masking channel types — an environment switch and character binding slots — enable task unification with proper guidance.
         </p>
       </div>
 
       <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:1.2rem 1.5rem;">
-        <h4 style="color:#fff !important; font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
+        <h4 style="font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
           🔄 Mode-Specific Context RoPE
         </h4>
-        <p style="font-size:0.9rem; color:#999 !important; margin:0; line-height:1.6;">
+        <p style="font-size:0.9rem; color:#999; margin:0; line-height:1.6;">
           Dedicated RoPE position encodings per task mode allow a single model to correctly route spatial-temporal attention across animation and replacement.
         </p>
       </div>
 
       <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:1.2rem 1.5rem;">
-        <h4 style="color:#fff !important; font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
+        <h4 style="font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
           ✋ Bias-Aware DPO
         </h4>
-        <p style="font-size:0.9rem; color:#999 !important; margin:0; line-height:1.6;">
+        <p style="font-size:0.9rem; color:#999; margin:0; line-height:1.6;">
           A post-training DPO scheme targets synthetic-data bias concentrated in fine-grained regions (especially hands/fingers), improving end-to-end motion fidelity in detailed areas.
         </p>
       </div>
@@ -413,7 +500,7 @@
 <hr class="section-divider">
 
 <!-- ───────────────────── COMPARISON: SINGLE ANIMATION ───────────────────── -->
-<section class="section" style="padding-top:3rem; padding-bottom:3rem; background-color:#080808 !important;">
+<section class="section stripe-section" style="padding-top:3rem; padding-bottom:3rem;">
   <div class="container" style="max-width:1150px;">
     <div class="has-text-centered scroll-animate" style="margin-bottom:2rem;">
       <span class="section-tag">Comparison</span>
@@ -423,18 +510,15 @@
       </p>
     </div>
 
-    <div class="compare-label scroll-animate">
-    </div>
-
     <div class="video-grid-2 scroll-animate" style="margin-bottom:1.2rem;">
       <div class="video-card">
-        <video muted loop playsinline preload="metadata">
+        <video class="compare-video" muted playsinline preload="metadata" controls>
           <source src="./static/videos/Single_Compare/hard_004_comparison.mp4" type="video/mp4">
         </video>
         <div class="video-caption">Cross-identity complex motion on Studio-Bench</div>
       </div>
       <div class="video-card">
-        <video muted loop playsinline preload="metadata">
+        <video class="compare-video" muted playsinline preload="metadata" controls>
           <source src="./static/videos/Single_Compare/050_comparison.mp4" type="video/mp4">
         </video>
         <div class="video-caption">Dancing videos on X-Dance benchmark</div>
@@ -442,13 +526,13 @@
     </div>
     <div class="video-grid-2 scroll-animate">
       <div class="video-card">
-        <video muted loop playsinline preload="metadata">
+        <video class="compare-video" muted playsinline preload="metadata" controls>
           <source src="./static/videos/Single_Compare/old_049_comparison.mp4" type="video/mp4">
         </video>
         <div class="video-caption">Camera following with character movements</div>
       </div>
       <div class="video-card">
-        <video muted loop playsinline preload="metadata">
+        <video class="compare-video" muted playsinline preload="metadata" controls>
           <source src="./static/videos/Single_Compare/old_067_comparison.mp4" type="video/mp4">
         </video>
         <div class="video-caption">Detailed motion when arms overlap</div>
@@ -470,21 +554,22 @@
       </p>
     </div>
 
-    <div class="compare-label scroll-animate">
-    </div>
-
-    <div class="scroll-animate" style="display:flex; flex-direction:column; gap:1.2rem; max-width:66%; margin:0 auto;">
-      <div class="video-card">
-        <video muted loop playsinline preload="metadata">
-          <source src="./static/videos/Multi_Compare/multi_009_comparison.mp4" type="video/mp4">
-        </video>
-        <div class="video-caption">End-to-end with proper identity isolation</div>
+    <div class="scroll-animate" style="display:flex; flex-direction:column; gap:1.2rem; margin:0 auto; width:100%;">
+      <div style="max-width:72%; margin:0 auto; width:100%;">
+        <div class="video-card">
+          <video class="compare-video" muted playsinline preload="metadata" controls>
+            <source src="./static/videos/Multi_Compare/multi_009_comparison.mp4" type="video/mp4">
+          </video>
+          <div class="video-caption">End-to-end with proper identity isolation</div>
+        </div>
       </div>
-      <div class="video-card">
-        <video muted loop playsinline preload="metadata">
-          <source src="./static/videos/Multi_Compare/multi_025_comparison.mp4" type="video/mp4">
-        </video>
-        <div class="video-caption">Precise interactions with identity isolation</div>
+      <div style="max-width:80%; margin:0 auto; width:100%;">
+        <div class="video-card">
+          <video class="compare-video" muted playsinline preload="metadata" controls>
+            <source src="./static/videos/Multi_Compare/multi_025_comparison.mp4" type="video/mp4">
+          </video>
+          <div class="video-caption">Precise interactions with identity isolation</div>
+        </div>
       </div>
     </div>
   </div>
@@ -493,7 +578,7 @@
 <hr class="section-divider">
 
 <!-- ───────────────────── COMPARISON: REPLACEMENT ───────────────────── -->
-<section class="section" style="padding-top:3rem; padding-bottom:3rem; background-color:#080808 !important;">
+<section class="section stripe-section" style="padding-top:3rem; padding-bottom:3rem;">
   <div class="container" style="max-width:1150px;">
     <div class="has-text-centered scroll-animate" style="margin-bottom:2rem;">
       <span class="section-tag">Comparison</span>
@@ -503,19 +588,16 @@
       </p>
     </div>
 
-    <div class="compare-label scroll-animate">
-    </div>
-
     <!-- Row 1: two equal-width normal videos, kept narrower -->
     <div class="scroll-animate" style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; width:75%; margin:0 auto 1.2rem;">
       <div class="video-card">
-        <video muted loop playsinline preload="metadata">
+        <video class="compare-video" muted playsinline preload="metadata" controls>
           <source src="./static/videos/replacement_Compare/000_comparison.mp4" type="video/mp4">
         </video>
-        <div class="video-caption">Detailed HOI</div>
+        <div class="video-caption">Detailed human object interaction</div>
       </div>
       <div class="video-card">
-        <video muted loop playsinline preload="metadata">
+        <video class="compare-video" muted playsinline preload="metadata" controls>
           <source src="./static/videos/replacement_Compare/016_comparison.mp4" type="video/mp4">
         </video>
         <div class="video-caption">Occluded characters</div>
@@ -524,21 +606,21 @@
 
     <!-- Row 2: centered at 92%; 029 ≈ same width as Row 1 cells; ultra-wides fill right col -->
     <div class="scroll-animate" style="display:grid; grid-template-columns:40% 1fr; gap:1.2rem; width:92%; margin:0 auto;">
-      <div class="video-card" style="align-self:center;">
-        <video muted loop playsinline preload="metadata">
+      <div class="video-card" style="align-self:center; margin-left:8%">
+        <video class="compare-video" muted playsinline preload="metadata" controls>
           <source src="./static/videos/replacement_Compare/029_comparison.mp4" type="video/mp4">
         </video>
-        <div class="video-caption">HOI + cross-identity</div>
+        <div class="video-caption">Human object interaction + cross-identity</div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:1.2rem; max-width:88%;">
+      <div style="display:flex; flex-direction:column; gap:1.2rem; max-width:88%; margin:0 auto;">
         <div class="video-card">
-          <video muted loop playsinline preload="metadata" style="width:100%;">
+          <video class="compare-video" muted playsinline preload="metadata" controls style="width:100%;">
             <source src="./static/videos/replacement_Compare/014_comparison.mp4" type="video/mp4">
           </video>
-          <div class="video-caption">HOI + difficult tracking</div>
+          <div class="video-caption">Human object interaction + difficult tracking</div>
         </div>
         <div class="video-card">
-          <video muted loop playsinline preload="metadata" style="width:100%;">
+          <video class="compare-video" muted playsinline preload="metadata" controls style="width:100%;">
             <source src="./static/videos/replacement_Compare/extra_000_comparison.mp4" type="video/mp4">
           </video>
           <div class="video-caption">Complex motion + cross-identity</div>
@@ -572,13 +654,13 @@
           <video muted loop playsinline preload="metadata">
             <source src="./static/videos/Zero-shot/001_gt_overlay.mp4" type="video/mp4">
           </video>
-          <div class="video-caption">Zero-shot — out-of-distribution driving</div>
+          <div class="video-caption">Zero-shot animal driving</div>
         </div>
         <div class="video-card">
           <video muted loop playsinline preload="metadata">
             <source src="./static/videos/Zero-shot/001_gt_overlay_2.mp4" type="video/mp4">
           </video>
-          <div class="video-caption">Zero-shot — generalization case 2</div>
+          <div class="video-caption">Zero-shot egocentric driving</div>
         </div>
       </div>
     </div>
@@ -588,7 +670,7 @@
 <hr class="section-divider">
 
 <!-- ───────────────────── BIBTEX ───────────────────── -->
-<section class="section" id="bibtex" style="padding-top:3rem; padding-bottom:3rem; background-color:#080808 !important;">
+<section class="section stripe-section" id="bibtex" style="padding-top:3rem; padding-bottom:3rem;">
   <div class="container is-max-desktop">
     <div class="scroll-animate">
       <span class="section-tag">Citation</span>
@@ -629,6 +711,17 @@
 
 <!-- ───────────────────── SCRIPTS ───────────────────── -->
 <script>
+  // Light/dark mode toggle
+  function toggleTheme() {
+    const isLight = document.body.classList.toggle('light');
+    document.documentElement.style.backgroundColor = isLight ? '#f5f5f5' : '#020202';
+    document.getElementById('theme-icon').textContent = isLight ? '☀️' : '🌙';
+  }
+
+
+  // Set html bg to match default light mode
+  document.documentElement.style.backgroundColor = '#f5f5f5';
+
   // Navbar burger
   document.addEventListener('DOMContentLoaded', () => {
     const burger = document.querySelector('.navbar-burger');
@@ -660,7 +753,7 @@
       }
     });
   }, { threshold: 0.3 });
-  document.querySelectorAll('video').forEach(v => videoObserver.observe(v));
+  document.querySelectorAll('video:not(.compare-video)').forEach(v => videoObserver.observe(v));
 </script>
 
 </body>
