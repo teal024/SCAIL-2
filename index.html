@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="SCAIL-2: Unifying Controlled Character Animation with End-to-end In-Context Conditioning">
+  <meta name="keywords" content="Character Animation, Video Generation, Diffusion Models">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SCAIL-2</title>
+
+  <link rel="icon" href="./static/images/favicon.svg">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@400;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+
+  <style>
+    /* ── Dark theme (MoCha-inspired) ── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      background-color: #020202 !important;
+      color: #dcdcdc;
+      font-family: 'Jost', 'Google Sans', 'Noto Sans', sans-serif;
+    }
+
+    /* Navbar */
+    .navbar, .navbar-menu, .navbar-start, .navbar-end {
+      background-color: #020202 !important;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    .navbar-item, .navbar-link { color: #e6e6e6 !important; }
+    .navbar-item:hover { background-color: #141414 !important; color: #fff !important; }
+    .navbar-link::after { border-color: #e6e6e6 !important; }
+    .navbar-dropdown { background-color: #0a0a0a !important; }
+    .navbar-burger { color: #e6e6e6 !important; }
+
+    /* Sections */
+    .hero, .section, .footer,
+    .hero.is-light, .section.is-light, section.alt-bg {
+      background-color: #020202 !important;
+    }
+    section.alt-bg { background-color: #0d0d0d !important; }
+
+    /* Typography */
+    .title, .subtitle, h1, h2, h3, h4, h5, h6 { color: #f0f0f0 !important; }
+    .content, .content p, .content li, .publication-authors, .author-block, p { color: #c8c8c8 !important; }
+    .content strong { color: #ffffff !important; }
+    a { color: #6fb0ff; }
+    a:hover { color: #9ecbff; }
+
+    /* Buttons */
+    .button.is-dark {
+      background-color: #1a1a1a !important;
+      color: #ffffff !important;
+      border: 1px solid #333 !important;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .button.is-dark:hover { background-color: #282828 !important; border-color: #555 !important; }
+
+    /* Code / BibTeX */
+    pre { background-color: #0d0d0d !important; color: #e0e0e0 !important; border: 1px solid #1f1f1f; border-radius: 8px; }
+    pre code { background: transparent !important; color: #e0e0e0 !important; }
+
+    /* Footer */
+    .footer .content, .footer p { color: #888 !important; }
+    .footer a { color: #6fb0ff !important; }
+
+    /* Divider line */
+    .section-divider {
+      border: none;
+      border-top: 1px solid #1f1f1f;
+      margin: 0;
+    }
+
+    /* ── Hero / Title ── */
+    .publication-maintitle {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #ffffff !important;
+      line-height: 1.2;
+    }
+    .publication-subtitle {
+      font-size: 1.35rem;
+      font-weight: 400;
+      color: #a0a0a0 !important;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Author block ── */
+    .author-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.4rem 0.8rem; margin-top: 1rem; }
+    .author-block { font-size: 1.1rem; color: #c8c8c8 !important; }
+    .author-block a { color: #6fb0ff; text-decoration: none; }
+    .author-block a:hover { text-decoration: underline; }
+    .affil-block { font-size: 0.95rem; color: #888 !important; margin-top: 0.5rem; }
+
+    /* ── Section label pill ── */
+    .section-tag {
+      display: inline-block;
+      padding: 0.25rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid #333;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #999 !important;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Video cards ── */
+    .video-card {
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .video-card:hover { border-color: #333; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
+    .video-card video { display: block; width: 100%; }
+    .video-caption {
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
+      color: #888 !important;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Grid layouts ── */
+    .video-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .video-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; }
+    .video-grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem; }
+
+    @media (max-width: 768px) {
+      .video-grid-2, .video-grid-3, .video-grid-auto { grid-template-columns: 1fr; }
+      .publication-maintitle { font-size: 2rem; }
+    }
+
+    /* ── Carousel override ── */
+    .carousel-container { position: relative; }
+    .carousel .item { padding: 0.5rem; }
+    .carousel .item video { border-radius: 10px; width: 100%; }
+
+    /* Bulma carousel nav arrows */
+    .slider-navigation-previous,
+    .slider-navigation-next {
+      background-color: rgba(255,255,255,0.08) !important;
+      border: 1px solid rgba(255,255,255,0.15) !important;
+      color: #fff !important;
+    }
+
+    /* ── Method images ── */
+    .method-img { border-radius: 10px; border: 1px solid #1e1e1e; width: 100%; }
+    .method-caption {
+      text-align: center;
+      font-size: 0.85rem;
+      color: #666 !important;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Scroll-fade animation ── */
+    .scroll-animate {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .scroll-animate.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Comparison label bar ── */
+    .compare-label {
+      background: #0d0d0d;
+      border: 1px solid #1e1e1e;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      color: #aaa !important;
+      line-height: 1.6;
+    }
+    .compare-label strong { color: #fff !important; }
+
+    /* Teaser highlight strip */
+    .teaser-strip {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: #333 #000;
+    }
+    .teaser-strip .video-card { flex: 0 0 calc(50% - 0.5rem); }
+    @media (max-width: 900px) { .teaser-strip .video-card { flex: 0 0 85%; } }
+
+  </style>
+</head>
+<body>
+
+<!-- ───────────────────── NAVBAR ───────────────────── -->
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow:1;justify-content:center;">
+      <a class="navbar-item" href="../v1/index.html">← SCAIL-1</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ───────────────────── HERO ───────────────────── -->
+<section class="hero" style="padding-top: 3rem; padding-bottom: 1rem;">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+
+      <h1 class="publication-maintitle scroll-animate">SCAIL-2</h1>
+      <div class="publication-subtitle scroll-animate">
+        Unifying Controlled Character Animation with End-to-end In-Context Conditioning
+      </div>
+
+      <!-- Authors -->
+      <div class="author-list scroll-animate" style="margin-top: 1.8rem;">
+        <span class="author-block"><a href="https://github.com/teal024">Wenhao Yan</a><sup>1*</sup>,</span>
+        <span class="author-block">Fengjia Guo<sup>1*</sup>,</span>
+        <span class="author-block"><a href="https://scholar.google.com/citations?user=tgAt-gEAAAAJ">Zhuoyi Yang</a><sup>1†</sup>,</span>
+        <span class="author-block"><a href="https://keg.cs.tsinghua.edu.cn/jietang/">Jie Tang</a><sup>1‡</sup></span>
+      </div>
+      <div class="affil-block scroll-animate">
+        <sup>1</sup>Tsinghua University &nbsp;·&nbsp; <sup>2</sup>Z.ai
+        &nbsp;&nbsp;
+        <sup>*</sup>Equal contribution &nbsp;·&nbsp;
+        <sup>†</sup>Tech lead &nbsp;·&nbsp;
+        <sup>‡</sup>Corresponding author
+      </div>
+
+      <!-- Links -->
+      <div class="publication-links scroll-animate" style="margin-top: 1.5rem;">
+        <span class="link-block">
+          <a href="https://arxiv.org/abs/2512.05905" target="_blank" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon"><i class="ai ai-arxiv"></i></span><span>arXiv</span>
+          </a>
+        </span>
+        <span class="link-block">
+          <a href="https://github.com/zai-org/SCAIL-2" target="_blank" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon"><i class="fab fa-github"></i></span><span>Code</span>
+          </a>
+        </span>
+        <span class="link-block">
+          <a href="https://huggingface.co/zai-org" target="_blank" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon"><img src="./static/images/hf-logo.svg" style="width:18px;filter:invert(1) grayscale(1);"></span>
+            <span>HuggingFace</span>
+          </a>
+        </span>
+        <span class="link-block">
+          <a href="#bibtex" class="external-link button is-normal is-rounded is-dark">
+            <span class="icon"><i class="fas fa-book"></i></span><span>Cite</span>
+          </a>
+        </span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── TEASER VIDEOS ───────────────────── -->
+<section class="section" style="padding-top:3rem; padding-bottom:3rem;">
+  <div class="container is-max-desktop">
+    <div class="has-text-centered scroll-animate" style="margin-bottom:2rem;">
+      <span class="section-tag">Highlights</span>
+      <h2 class="title is-3" style="margin-bottom:0.5rem;">SCAIL-2 in Action</h2>
+      <p style="font-size:1.05rem; max-width:680px; margin:0 auto;">
+        End-to-end character animation across diverse tasks, no skeleton intermediates required.
+      </p>
+    </div>
+
+    <!-- Row 1: multi-character + one animation overlay -->
+    <div class="video-grid-2 scroll-animate" style="margin-bottom:1.2rem;">
+      <div class="video-card">
+        <video autoplay muted loop playsinline preload="metadata">
+          <source src="./static/videos/Teaser_Samples/multi.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Multi-character animation</div>
+      </div>
+      <div class="video-card">
+        <video autoplay muted loop playsinline preload="metadata">
+          <source src="./static/videos/Teaser_Samples/025_gt_overlay.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Cross-identity character replacement</div>
+      </div>
+    </div>
+
+    <!-- Row 2: remaining three videos -->
+    <div class="video-grid-3 scroll-animate">
+      <div class="video-card">
+        <video autoplay muted loop playsinline preload="metadata">
+          <source src="./static/videos/Teaser_Samples/old_056_side_by_side.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Cross-identity character animation</div>
+      </div>
+      <div class="video-card">
+        <video autoplay muted loop playsinline preload="metadata">
+          <source src="./static/videos/Teaser_Samples/replace_long_crop.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Character replacement</div>
+      </div>
+      <div class="video-card">
+        <video autoplay muted loop playsinline preload="metadata">
+          <source src="./static/videos/Teaser_Samples/045_gt_overlay.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Multi-character replacement</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── ABSTRACT ───────────────────── -->
+<section class="section alt-bg" style="padding-top:3rem; padding-bottom:3rem; background-color:#0a0a0a !important;">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <span class="section-tag scroll-animate">Abstract</span>
+        <div class="content has-text-justified scroll-animate" style="font-size:1.08rem; line-height:1.85; color:#c0c0c0 !important;">
+          <p>
+            Controlled character animation requires transferring motion from a driving sequence to a reference character. Prior works heavily rely on <strong>intermediate representations</strong> — including pose skeletons to represent motion or masked background to represent environment — which inevitably leads to information loss. Skeleton maps suffer from inherent ambiguity under complex scenarios; character masks limit body-shape flexibility; and depth-ambiguous overlapping skeletons cause misinterpretation in multi-character interactions.
+          </p>
+          <p>
+            To address this, we present <strong>SCAIL-2</strong>, a framework that bypasses those intermediates and achieves <strong>end-to-end character animation</strong>. By directly concatenating driving videos latents to the sequence, the model obtains all required visual information from the input. To overcome the lack of end-to-end data, we unify sub-tasks of character animation with decoupled conditions and curate a pipeline to synthesize <strong>MotionPair-60K</strong> — a heterogeneous dataset of 60K motion pairs spanning animation, replacement, and multi-character tasks. We introduce <strong>in-context mask conditioning</strong> and <strong>mode-specific RoPE</strong> as unified soft guidance. To mitigate synthetic-data bias in detailed regions (e.g. fingers), we propose <strong>Bias-Aware DPO</strong> for post-training refinement. Extensive experiments demonstrate that SCAIL-2 substantially outperforms existing state-of-the-art approaches across all tasks, while unlocking emerging zero-shot capabilities such as animal-driven animation and mesh-based control.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── METHOD ───────────────────── -->
+<section class="section" style="padding-top:3rem; padding-bottom:3rem;">
+  <div class="container is-max-desktop">
+    <div class="has-text-centered scroll-animate" style="margin-bottom:2.5rem;">
+      <span class="section-tag">Method</span>
+      <h2 class="title is-3" style="margin-bottom:0.5rem;">Unified End-to-End Architecture</h2>
+      <p style="font-size:1.05rem; max-width:720px; margin:0 auto;">
+        SCAIL-2 builds a unified motion transfer interface on top of a latent video diffusion model, replacing brittle skeleton intermediates with direct visual conditioning.
+      </p>
+    </div>
+
+    <!-- Two method images stacked -->
+    <div class="scroll-animate" style="display:flex; flex-direction:column; gap:1.5rem; margin-bottom:2rem; max-width:90%; margin-left:auto; margin-right:auto;">
+      <div>
+        <img src="./static/images/pipeline.png" alt="SCAIL-2 Data Pipeline" class="method-img">
+        <p class="method-caption">Agentic data synthesis pipeline for MotionPair-60K</p>
+      </div>
+      <div>
+        <img src="./static/images/network.png" alt="SCAIL-2 Network Architecture" class="method-img">
+        <p class="method-caption">Unified in-context conditioning with mode-specific RoPE</p>
+      </div>
+    </div>
+
+    <!-- Key contributions -->
+    <div class="scroll-animate" style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+
+      <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:1.2rem 1.5rem;">
+        <h4 style="color:#fff !important; font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
+          📦 MotionPair-60K Dataset
+        </h4>
+        <p style="font-size:0.9rem; color:#999 !important; margin:0; line-height:1.6;">
+          We use SCAIL-Preview, Wan-Animate, and MoCha as generators in the generation pipeline to synthesize 60K heterogeneous motion pairs spanning animation, replacement, and multi-character tasks.
+        </p>
+      </div>
+
+      <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:1.2rem 1.5rem;">
+        <h4 style="color:#fff !important; font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
+          🎭 In-Context Mask Conditioning
+        </h4>
+        <p style="font-size:0.9rem; color:#999 !important; margin:0; line-height:1.6;">
+          Two masking channel types — an environment switch and character binding slots — enable task unification with proper guidance.
+        </p>
+      </div>
+
+      <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:1.2rem 1.5rem;">
+        <h4 style="color:#fff !important; font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
+          🔄 Mode-Specific Context RoPE
+        </h4>
+        <p style="font-size:0.9rem; color:#999 !important; margin:0; line-height:1.6;">
+          Dedicated RoPE position encodings per task mode allow a single model to correctly route spatial-temporal attention across animation and replacement.
+        </p>
+      </div>
+
+      <div style="background:#0d0d0d; border:1px solid #1e1e1e; border-radius:10px; padding:1.2rem 1.5rem;">
+        <h4 style="color:#fff !important; font-size:1rem; font-weight:600; margin-bottom:0.5rem;">
+          ✋ Bias-Aware DPO
+        </h4>
+        <p style="font-size:0.9rem; color:#999 !important; margin:0; line-height:1.6;">
+          A post-training DPO scheme targets synthetic-data bias concentrated in fine-grained regions (especially hands/fingers), improving end-to-end motion fidelity in detailed areas.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── COMPARISON: SINGLE ANIMATION ───────────────────── -->
+<section class="section" style="padding-top:3rem; padding-bottom:3rem; background-color:#080808 !important;">
+  <div class="container" style="max-width:1150px;">
+    <div class="has-text-centered scroll-animate" style="margin-bottom:2rem;">
+      <span class="section-tag">Comparison</span>
+      <h2 class="title is-3" style="margin-bottom:0.5rem;">Single-Character Animation</h2>
+      <p style="font-size:1.05rem; max-width:680px; margin:0 auto;">
+        SCAIL-2 vs. state-of-the-art pose-driven animation methods or proprietary services. Each video shows multiple methods side by side.
+      </p>
+    </div>
+
+    <div class="compare-label scroll-animate">
+    </div>
+
+    <div class="video-grid-2 scroll-animate" style="margin-bottom:1.2rem;">
+      <div class="video-card">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/Single_Compare/hard_004_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Cross-identity complex motion on Studio-Bench</div>
+      </div>
+      <div class="video-card">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/Single_Compare/050_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Dancing videos on X-Dance benchmark</div>
+      </div>
+    </div>
+    <div class="video-grid-2 scroll-animate">
+      <div class="video-card">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/Single_Compare/old_049_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Camera following with character movements</div>
+      </div>
+      <div class="video-card">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/Single_Compare/old_067_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Detailed motion when arms overlap</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── COMPARISON: MULTI-CHARACTER ───────────────────── -->
+<section class="section" style="padding-top:3rem; padding-bottom:3rem;">
+  <div class="container is-max-desktop">
+    <div class="has-text-centered scroll-animate" style="margin-bottom:2rem;">
+      <span class="section-tag">Comparison</span>
+      <h2 class="title is-3" style="margin-bottom:0.5rem;">Multi-Character Animation</h2>
+      <p style="font-size:1.05rem; max-width:680px; margin:0 auto;">
+        When multiple people interact closely, depth-ambiguous overlapping skeletons cause misinterpretation in existing methods. SCAIL-2 handles interactions correctly end-to-end.
+      </p>
+    </div>
+
+    <div class="compare-label scroll-animate">
+    </div>
+
+    <div class="scroll-animate" style="display:flex; flex-direction:column; gap:1.2rem; max-width:66%; margin:0 auto;">
+      <div class="video-card">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/Multi_Compare/multi_009_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">End-to-end with proper identity isolation</div>
+      </div>
+      <div class="video-card">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/Multi_Compare/multi_025_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Precise interactions with identity isolation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── COMPARISON: REPLACEMENT ───────────────────── -->
+<section class="section" style="padding-top:3rem; padding-bottom:3rem; background-color:#080808 !important;">
+  <div class="container" style="max-width:1150px;">
+    <div class="has-text-centered scroll-animate" style="margin-bottom:2rem;">
+      <span class="section-tag">Comparison</span>
+      <h2 class="title is-3" style="margin-bottom:0.5rem;">Character Replacement</h2>
+      <p style="font-size:1.05rem; max-width:680px; margin:0 auto;">
+        Replace a character in an existing video with a reference identity. SCAIL-2 achieves seamless environment integration and accurate motion without background-inpainting masks and surpasses our data generator MoCha.
+      </p>
+    </div>
+
+    <div class="compare-label scroll-animate">
+    </div>
+
+    <!-- Row 1: two equal-width normal videos, kept narrower -->
+    <div class="scroll-animate" style="display:grid; grid-template-columns:1fr 1fr; gap:1.2rem; width:75%; margin:0 auto 1.2rem;">
+      <div class="video-card">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/replacement_Compare/000_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Detailed HOI</div>
+      </div>
+      <div class="video-card">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/replacement_Compare/016_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">Occluded characters</div>
+      </div>
+    </div>
+
+    <!-- Row 2: centered at 92%; 029 ≈ same width as Row 1 cells; ultra-wides fill right col -->
+    <div class="scroll-animate" style="display:grid; grid-template-columns:40% 1fr; gap:1.2rem; width:92%; margin:0 auto;">
+      <div class="video-card" style="align-self:center;">
+        <video muted loop playsinline preload="metadata">
+          <source src="./static/videos/replacement_Compare/029_comparison.mp4" type="video/mp4">
+        </video>
+        <div class="video-caption">HOI + cross-identity</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:1.2rem; max-width:88%;">
+        <div class="video-card">
+          <video muted loop playsinline preload="metadata" style="width:100%;">
+            <source src="./static/videos/replacement_Compare/014_comparison.mp4" type="video/mp4">
+          </video>
+          <div class="video-caption">HOI + difficult tracking</div>
+        </div>
+        <div class="video-card">
+          <video muted loop playsinline preload="metadata" style="width:100%;">
+            <source src="./static/videos/replacement_Compare/extra_000_comparison.mp4" type="video/mp4">
+          </video>
+          <div class="video-caption">Complex motion + cross-identity</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── ZERO-SHOT ───────────────────── -->
+<section class="section" style="padding-top:3rem; padding-bottom:3rem;">
+  <div class="container is-max-desktop">
+    <div class="has-text-centered scroll-animate" style="margin-bottom:2rem;">
+      <span class="section-tag">Generalization</span>
+      <h2 class="title is-3" style="margin-bottom:0.5rem;">Zero-Shot Capabilities</h2>
+      <p style="font-size:1.05rem; max-width:720px; margin:0 auto;">
+        Because SCAIL-2 learns from visual context rather than skeleton semantics, it generalizes to driving sources that are entirely outside training — including animals and egocentric videos.
+      </p>
+    </div>
+
+    <div class="compare-label scroll-animate">
+       Note: as both videos are completely zero-shot and out-of-distribution, there may exist artifacts.
+    </div>
+
+    <div style="max-width:60%; margin:0 auto;">
+      <div class="video-grid-2 scroll-animate">
+        <div class="video-card">
+          <video muted loop playsinline preload="metadata">
+            <source src="./static/videos/Zero-shot/001_gt_overlay.mp4" type="video/mp4">
+          </video>
+          <div class="video-caption">Zero-shot — out-of-distribution driving</div>
+        </div>
+        <div class="video-card">
+          <video muted loop playsinline preload="metadata">
+            <source src="./static/videos/Zero-shot/001_gt_overlay_2.mp4" type="video/mp4">
+          </video>
+          <div class="video-caption">Zero-shot — generalization case 2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── BIBTEX ───────────────────── -->
+<section class="section" id="bibtex" style="padding-top:3rem; padding-bottom:3rem; background-color:#080808 !important;">
+  <div class="container is-max-desktop">
+    <div class="scroll-animate">
+      <span class="section-tag">Citation</span>
+      <h2 class="title is-3" style="margin-bottom:1.5rem;">BibTeX</h2>
+      <pre style="font-size:0.88rem; line-height:1.7;"><code>@article{yan2025scail2,
+  title={SCAIL-2: Unifying Controlled Character Animation with End-to-end In-Context Conditioning},
+  author={Yan, Wenhao and Guo, Fengjia and Yang, Zhuoyi and Tang, Jie},
+  year={2025}
+}
+
+@article{yan2025scail,
+  title={SCAIL: Towards Studio-Grade Character Animation via In-Context Learning of 3D-Consistent Pose Representations},
+  author={Yan, Wenhao and Ye, Sheng and Yang, Zhuoyi and Teng, Jiayan and Dong, ZhenHui and Wen, Kairui and Gu, Xiaotao and Liu, Yong-Jin and Tang, Jie},
+  journal={arXiv preprint arXiv:2512.05905},
+  year={2025}
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<!-- ───────────────────── FOOTER ───────────────────── -->
+<footer class="footer" style="padding: 2rem 1.5rem;">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8 has-text-centered">
+        <p style="font-size:0.85rem;">
+          The images and videos used in this website are for academic demonstration only and are not for commercial use.
+        </p>
+        <p style="font-size:0.85rem; margin-top:0.5rem;">
+          This website is built upon the <a href="https://github.com/nerfies/nerfies.github.io">Nerfies template</a> Licensed under <a href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ───────────────────── SCRIPTS ───────────────────── -->
+<script>
+  // Navbar burger
+  document.addEventListener('DOMContentLoaded', () => {
+    const burger = document.querySelector('.navbar-burger');
+    const menu = document.getElementById(burger?.dataset.target) || document.querySelector('.navbar-menu');
+    if (burger && menu) {
+      burger.addEventListener('click', () => {
+        burger.classList.toggle('is-active');
+        menu.classList.toggle('is-active');
+      });
+    }
+  });
+
+  // Scroll-fade animation
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.scroll-animate').forEach(el => observer.observe(el));
+
+  // Autoplay videos when they enter the viewport, pause when they leave
+  const videoObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const v = entry.target;
+      if (entry.isIntersecting) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('video').forEach(v => videoObserver.observe(v));
+</script>
+
+</body>
+</html>
