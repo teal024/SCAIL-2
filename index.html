@@ -122,9 +122,33 @@
       transition: border-color 0.2s, box-shadow 0.2s;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
     .video-card:hover { border-color: #333; box-shadow: 0 4px 24px rgba(0,0,0,0.6); }
-    .video-card video { display: block; width: 100%; }
+    .video-card video { display: block; width: 100%; cursor: pointer; }
+
+    /* fullscreen button */
+    .vc-fullscreen-btn {
+      position: absolute; top: 7px; right: 7px;
+      width: 28px; height: 28px; border-radius: 6px;
+      background: rgba(0,0,0,0.55); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+      color: #fff; font-size: 13px; z-index: 10;
+    }
+    .video-card:hover .vc-fullscreen-btn { opacity: 1; }
+    .vc-fullscreen-btn:hover { background: rgba(0,0,0,0.8); }
+
+    /* pause overlay */
+    .vc-pause-icon {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      width: 44px; height: 44px; border-radius: 50%;
+      background: rgba(0,0,0,0.55);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s; pointer-events: none;
+      font-size: 16px; color: #fff;
+    }
+    .video-card.paused .vc-pause-icon { opacity: 1; }
     .video-caption {
       padding: 0.6rem 1rem;
       font-size: 0.85rem;
@@ -755,6 +779,41 @@
     });
   }, { threshold: 0.3 });
   document.querySelectorAll('video:not(.compare-video)').forEach(v => videoObserver.observe(v));
+
+  // Click-to-pause + fullscreen button for non-compare video cards
+  document.querySelectorAll('.video-card').forEach(card => {
+    const video = card.querySelector('video:not(.compare-video)');
+    if (!video) return;
+
+    // pause icon overlay
+    const pauseIcon = document.createElement('div');
+    pauseIcon.className = 'vc-pause-icon';
+    pauseIcon.innerHTML = '&#9646;&#9646;';
+    card.appendChild(pauseIcon);
+
+    // fullscreen button
+    const fsBtn = document.createElement('button');
+    fsBtn.className = 'vc-fullscreen-btn';
+    fsBtn.title = 'Fullscreen';
+    fsBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    card.appendChild(fsBtn);
+
+    video.addEventListener('click', () => {
+      if (video.paused) {
+        video.play().catch(() => {});
+        card.classList.remove('paused');
+      } else {
+        video.pause();
+        card.classList.add('paused');
+      }
+    });
+
+    fsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (video.requestFullscreen) video.requestFullscreen();
+      else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
+    });
+  });
 </script>
 
 </body>
